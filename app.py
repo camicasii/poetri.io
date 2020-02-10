@@ -6,7 +6,7 @@ app = flask.Flask(__name__)
 app.config["DEBUG"] = True
 
 
-@app.route('/a', methods=['GET'])
+@app.route('/data', methods=['GET'])
 def home():
     res = stateStockExchange()
     return jsonify(res)
