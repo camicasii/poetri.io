@@ -1,8 +1,11 @@
 import flask
+from flask_cors import CORS
 from  flask import  jsonify
 from stockExchange import stateStockExchange
 
+
 app = flask.Flask(__name__)
+CORS(app)
 app.config["DEBUG"] = True
 
 
