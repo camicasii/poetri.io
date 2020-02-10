@@ -1,6 +1,7 @@
 from pytz import  timezone
-from datetime import datetime
+from datetime import datetime, time
 import datetime as dt
+import copy
 
 London_StockExchange={
    "open":(dt.time(9, 30, 00),),
@@ -30,7 +31,7 @@ NYSETimeZone = (timezone('America/New_York'),NYSE_StockExchange)
 
 StockExchanges=[ASXTimeZone,TYOTimeZone,LondonTimeZone,NYSETimeZone]
 
-def isWeekEnd() -> bool:
+def __isWeekEnd() -> bool:
     #["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"]
     weekEnd_ = datetime.now().weekday()
     if weekEnd_ == 5 or weekEnd_ == 6:
@@ -38,38 +39,63 @@ def isWeekEnd() -> bool:
     else:
         return False
 
-def timeStockExchange(date):
-        """if isWeekEnd():
-            return [False,"is Weekend"]"""
-
+def _timeStockExchange(date):
+        if __isWeekEnd():
+            return [False,"is Weekend"]
         [StockExchangeHours,openClose]=date
+
         timeStock=datetime.now(StockExchangeHours).time()
+
         for state in  openClose:
             if len(openClose[state])>1:
                 break
             [openState] = openClose["open"]
             [closeState] = openClose["close"]
             state_= closeState>timeStock>openState
-            return [state_, timeStock]
+            return [state_, timeStock.strftime("%H:%M:%S")]
 
         [open_, close_] = openClose.items()
         [_,[open_one,open_two]]=open_
         [_, [close_one, close_two]] = close_
         state_=close_one>timeStock>open_one  or close_two>timeStock>open_two
-        return  [state_,timeStock]
+        return  [state_,timeStock.strftime("%H:%M:%S")]
 
-def stateStockExchange(data):
+def timeConvert(arg):
+    res = copy.copy(arg)
+    for key,val  in arg.items():
 
-    for date in data:
-        [timeZone_,StockExchange]=date
-        print(timeZone_,timeStockExchange(date))
-    return
+        if len(val) >1:
+            tyo_str=[]
+            for _time in val:
+                tyo_str.append(_time.strftime("%H:%M:%S"))
+            res[key] = tyo_str
+        else:
+            [time_] =val
+            if isinstance(time_,time):
+                res[key]=time_.strftime("%H:%M:%S")
+    return res
 
 
 
-stateStockExchange(StockExchanges)
-print()
 
+
+
+def stateStockExchange():
+    stock_Exchange=[]
+    global StockExchanges
+    for date in StockExchanges:
+        [timeZone_,StockExchange_]=date
+
+        stock_Exchange.append({"stock_Exchange":timeZone_.__str__(),
+                               "state":_timeStockExchange(date),
+                                "hours":timeConvert(StockExchange_)})
+    return stock_Exchange
+
+
+if __name__ == '__main__':
+    print(
+    stateStockExchange()
+    )
 
 
 
