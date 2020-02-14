@@ -1,7 +1,10 @@
 from pytz import  timezone
 from datetime import datetime, time
 import datetime as dt
+import  time
 import copy
+import  pytz
+from tzlocal import get_localzone # $ pip install tzlocal
 
 London_StockExchange={
    "open":(dt.time(9, 30, 00),),
@@ -71,8 +74,8 @@ def timeConvert(arg):
             res[key] = tyo_str
         else:
             [time_] =val
-            if isinstance(time_,time):
-                res[key]=time_.strftime("%H:%M:%S")
+            #if isinstance(time_,time):
+            res[key]=time_.strftime("%H:%M:%S")
     return res
 
 
@@ -88,13 +91,60 @@ def stateStockExchange():
 
         stock_Exchange.append({"stock_Exchange":timeZone_.__str__(),
                                "state":_timeStockExchange(date),
-                                "hours":timeConvert(StockExchange_)})
+                                "hours":timeConvert(StockExchange_),
+                                "localHours":timeHoraLocal(date)})
     return stock_Exchange
 
+def aux_timeHoraLocal(zona,extTime, hour):
+    fmt = '%Y-%m-%d %H:%M:%S %Z%z'
+    fmt2 = '%H:%M:%S'
+    data = zona.localize(datetime(extTime.year,
+                                      extTime.month,
+                                      extTime.day,
+                                      hour.hour,
+                                      hour.minute,
+                                      hour.microsecond), is_dst=False)
+    return data.astimezone(get_localzone()).strftime(fmt2)
+
+
+def timeHoraLocal(data):
+    [zone_,hours]=data
+    extTime = datetime.now(zone_).now()
+    [open_,close_]=hours
+    isOpenPlus =hours[open_]
+    isClosePlus = hours[close_]
+    if len(isOpenPlus)>1:
+        timeHoraLocal_={ open_: [],
+        close_:[]}
+        for opening in isOpenPlus:
+            timeHoraLocal_[open_].append(aux_timeHoraLocal(zone_, extTime, opening))
+        for closed in isClosePlus:
+            timeHoraLocal_[close_].append(aux_timeHoraLocal(zone_, extTime, closed))
+        return timeHoraLocal_
+
+    [opening]=hours[open_]
+    [closed]=hours[close_]
+
+    openLocal_= aux_timeHoraLocal(zone_,extTime,opening)
+    closedLocal_ = aux_timeHoraLocal(zone_,extTime,closed)
+    #return [openLocal_,closedLocal_]
+    return {open_:openLocal_,close_:closedLocal_}
 
 if __name__ == '__main__':
+    mytime = datetime.now()
+    old_time =timezone('Australia/Sydney')
+    #dt.time(9, 30, 00)
+    new_time = timezone('America/Caracas')
+    a =datetime.now(240)
+
+
+
+
+
     print(
-    stateStockExchange()
+        a
+    #stateStockExchange()
+
     )
 
 
